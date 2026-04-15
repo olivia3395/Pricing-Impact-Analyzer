@@ -19,7 +19,7 @@
 
 </div>
 
----
+
 
 ## 🎯 Motivation
 
@@ -29,7 +29,7 @@ This project directly maps to the analytical challenges at **Waymo, WeRide, and 
 - 📊 **Data scope:** 12M+ Yellow / Green / HVFHV trip records, Jul 2024 → Jun 2025
 - 🧠 **Methods:** Full causal inference stack from TWFE DiD through Causal Forest (CATE)
 
----
+
 
 ## 🔬 Causal Inference Stack
 
@@ -42,7 +42,7 @@ This project directly maps to the analytical challenges at **Waymo, WeRide, and 
 | **L5a** | Double/Debiased ML *(Chernozhukov 2018)* | ML-debiased ATE via cross-fitting; controls high-dim confounders |
 | **L5b** | Causal Forest *(Wager & Athey 2018)* | Zone-level CATE; feature importance; policy tree; RATE curve |
 
----
+
 
 ## 🚀 Quick Start
 
@@ -64,7 +64,7 @@ python src/run_pipeline.py --steps 5,6,7,10,11
 streamlit run src/dashboard/app.py
 ```
 
----
+
 
 ## 📁 Repository Structure
 
@@ -110,7 +110,7 @@ mobility_policy_shock_analytics/
     └── 02_causal_analysis.ipynb       # Full causal walkthrough L1→L5b
 ```
 
----
+
 
 ## 📦 Data Sources
 
@@ -128,7 +128,7 @@ mobility_policy_shock_analytics/
 | **Continuous dose** | `avg_cbd_fee` per zone-day — used in L3 dose-response |
 | **Ring** | CBD core / adjacent buffer / far control — used for heterogeneity analysis |
 
----
+
 
 ## 📊 Outputs
 
@@ -158,7 +158,7 @@ mobility_policy_shock_analytics/
 
 </details>
 
----
+
 
 ## 💡 Why Not A/B Test?
 
@@ -171,7 +171,7 @@ Congestion pricing is a **city-wide simultaneous policy** — no zones were rand
 
 These tools are **complementary, not interchangeable**. The right response to "no randomization" is not to force fake A/B framing — it is to use the correct quasi-experimental estimators, which this project implements in full.
 
----
+
 
 ## 🏙️ Business Implications
 
@@ -183,30 +183,8 @@ These tools are **complementary, not interchangeable**. The right response to "n
 | 4 | **Time-of-day targeting** | CATE heterogeneity by `peak_share` reveals asymmetric peak vs. off-peak elasticity |
 | 5 | **Policy scenario modeling** | Pipeline generalizes to any future city-level shock: parking reform, bridge tolls, EV mandates |
 
----
 
-## 📝 Resume Bullets
 
-```
-• Built end-to-end causal inference pipeline (L1–L5b) on 12M+ NYC TLC trips to
-  quantify mobility demand shifts from the 2025 MTA congestion pricing shock
-
-• Implemented Double/Debiased ML (Chernozhukov 2018) with 5-fold cross-fitting
-  and Random Forest nuisance learners to control high-dimensional zone-temporal
-  confounders; estimated ATE robust to confounding across 5 outcome metrics
-
-• Estimated conditional average treatment effects (CATE) via Causal Forest
-  (econml/GRF); produced zone-level CATE maps, feature importance rankings,
-  interpretable depth-2 policy trees, and RATE targeting curves
-
-• Implemented Synthetic DiD estimator (Arkhangelsky 2021) in pure Python with
-  placebo bootstrap SE; confirmed L1 parallel trends assumption empirically
-
-• Validated all results via 7 robustness check families (placebo dates,
-  anticipation, bandwidth, leave-one-borough-out, DML learner sensitivity)
-```
-
----
 
 <div align="center">
 
