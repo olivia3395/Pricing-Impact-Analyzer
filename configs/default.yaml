@@ -1,0 +1,163 @@
+project:
+  name: "mobility_policy_shock_analytics"
+  version: "1.0.0"
+
+paths:
+  raw_data: "artifacts/raw"
+  processed: "artifacts/processed"
+  results: "artifacts/results"
+  figures: "artifacts/figures"
+  tables: "artifacts/tables"
+
+policy:
+  shock_date: "2025-01-05"           # MTA congestion pricing start
+  pre_start: "2024-07-01"            # pre-period start
+  pre_end: "2025-01-04"              # last pre-period day
+  post_end: "2025-06-30"             # post-period end
+  announcement_date: "2024-11-01"    # used for anticipation checks
+  event_window_weeks: 16             # weeks before/after shock for event study
+
+data:
+  trip_types:
+    - "yellow"
+    - "green"
+    - "fhvhv"                        # Uber/Lyft high-volume FHV
+  months:
+    - "2024-07"
+    - "2024-08"
+    - "2024-09"
+    - "2024-10"
+    - "2024-11"
+    - "2024-12"
+    - "2025-01"
+    - "2025-02"
+    - "2025-03"
+    - "2025-04"
+    - "2025-05"
+    - "2025-06"
+  panel_unit: "zone_day"             # zone_day or zone_hour
+  min_trips_per_cell: 5              # drop sparse cells
+
+treatment:
+  # CBD zone definition: Manhattan below 60th St
+  cbd_zone_ids:                      # TLC LocationIDs in congestion zone
+    - 4   # Alphabet City
+    - 12  # Battery Park
+    - 13  # Battery Park City
+    - 24  # Bloomingdale
+    - 41  # Central Park
+    - 42  # Central Harlem
+    - 43  # Central Harlem North
+    - 45  # Chinatown
+    - 48  # Clinton East
+    - 50  # Clinton West
+    - 68  # East Chelsea
+    - 79  # East Village
+    - 87  # Flatiron
+    - 88  # Financial District North
+    - 89  # Financial District South
+    - 90  # Garment District
+    - 100 # Gramercy
+    - 103 # Greenwich Village North
+    - 104 # Greenwich Village South
+    - 105 # Hamilton Heights
+    - 107 # Hudson Sq
+    - 113 # Inwood Hill Park
+    - 114 # Jackson Heights
+    - 116 # Jamaica
+    - 120 # Kips Bay
+    - 125 # Lenox Hill East
+    - 126 # Lenox Hill West
+    - 127 # Lincoln Square East
+    - 128 # Lincoln Square West
+    - 144 # Midtown Center
+    - 148 # Midtown East
+    - 151 # Midtown North
+    - 152 # Midtown South
+    - 153 # Morningside Heights
+    - 158 # Murray Hill
+    - 161 # NoHo
+    - 162 # NoMad
+    - 163 # North Sutton Area
+    - 164 # NY State
+    - 166 # Old Astoria
+    - 170 # Park Avenue
+    - 186 # Penn Station/Madison Sq West
+    - 194 # Prospect Heights
+    - 202 # Roosevelt Island
+    - 209 # Seaport
+    - 211 # SoHo
+    - 224 # Stuy Town/Peter Cooper Village
+    - 229 # Sutton Place/Turtle Bay North
+    - 230 # Times Sq/Theatre District
+    - 231 # TriBeCa/Civic Center
+    - 232 # Two Bridges/Seaport
+    - 233 # UN/Turtle Bay South
+    - 234 # Union Sq
+    - 236 # Upper East Side North
+    - 237 # Upper East Side South
+    - 238 # Upper West Side North
+    - 239 # Upper West Side South
+    - 243 # Washington Heights North
+    - 244 # Washington Heights South
+    - 246 # West Chelsea/Hudson Yards
+    - 249 # West Village
+    - 261 # World Trade Center
+    - 262 # Yorkville East
+    - 263 # Yorkville West
+
+  # Continuous treatment: use cbd_congestion_fee as dose
+  fee_col: "cbd_congestion_fee"
+
+causal:
+  naive_did:
+    cluster_var: "zone_id"
+    fe_vars: ["zone_id", "date"]
+
+  callaway_santanna:
+    anticipation: 0                  # set to 1 to test anticipation effects
+    control_group: "notyettreated"   # or "nevertreated"
+    bootstrap_reps: 999
+
+  continuous_did:
+    dose_var: "avg_cbd_fee"
+    bins: 5                          # quantile bins for dose-response plot
+
+  synthetic_did:
+    n_pre_periods: 26                # weeks
+    lambda_l2: 1e-6
+
+  dml:
+    n_folds: 5
+    n_reps: 3
+    ml_learner: "random_forest"      # random_forest | gradient_boosting | lasso
+    outcomes:
+      - "trip_count"
+      - "avg_distance"
+      - "avg_duration"
+      - "avg_fare"
+      - "surge_share"
+
+  causal_forest:
+    n_estimators: 2000
+    min_samples_leaf: 5
+    n_jobs: -1
+    outcomes:
+      - "trip_count"
+      - "avg_distance"
+    heterogeneity_vars:
+      - "hour_peak_share"
+      - "airport_share"
+      - "borough_code"
+      - "pre_mean_trips"
+      - "distance_to_cbd_km"
+
+outcomes:
+  primary: "trip_count"
+  secondary:
+    - "avg_distance"
+    - "avg_duration"
+    - "avg_fare"
+    - "surge_share"
+    - "airport_share"
+    - "cbd_fee_total"
